@@ -27,6 +27,44 @@ A real-time security monitoring system built with AWS serverless technologies. T
 - **Scalable Architecture**: Fully serverless with automatic scaling
 - **Cost-Effective**: Pay only for what you use with AWS serverless services
 
+## Dashboard Preview
+
+![Security Monitoring Dashboard](screenshots/dashboard.png)
+
+*Real-time security event monitoring with threat detection alerts, event analytics, and live statistics*
+
+## Quick Start
+
+Deploy in minutes with AWS SAM:
+
+```powershell
+# Clone and deploy
+git clone https://github.com/hackn3y/security-monitor-dash.git
+cd security-monitor-dash
+sam build && sam deploy --guided
+
+# Test with traffic simulator
+python scripts/traffic-simulator.py --endpoint YOUR_API_ENDPOINT --scenario all
+```
+
+See [QUICKSTART.md](QUICKSTART.md) for detailed setup instructions.
+
+## Cost Breakdown
+
+Estimated monthly costs for moderate usage (100K events/month):
+
+| Service | Usage | Estimated Cost |
+|---------|-------|----------------|
+| Lambda | 1M requests, 512MB, 30s avg | $5-10 |
+| DynamoDB | On-demand, 100K writes, 500K reads | $5-15 |
+| API Gateway | 1M requests | $3-7 |
+| CloudWatch | Logs, metrics, alarms | $1-5 |
+| S3 | Dashboard hosting, logs | <$1 |
+| SNS | Email notifications | <$1 |
+| **Total** | | **$15-40/month** |
+
+*Costs scale automatically with usage. 30-day TTL on events keeps storage costs low.*
+
 ## Architecture
 
 ### Components
