@@ -1,11 +1,16 @@
 # Serverless Security Monitoring Dashboard
 
+![AWS](https://img.shields.io/badge/AWS-Lambda%20%7C%20DynamoDB%20%7C%20API%20Gateway-orange)
+![Python](https://img.shields.io/badge/Python-3.13-blue)
+![Infrastructure](https://img.shields.io/badge/IaC-AWS%20SAM-green)
+![Security](https://img.shields.io/badge/Security-11%20Detection%20Rules-red)
+
 A real-time security monitoring system built with AWS serverless technologies. This project demonstrates cloud architecture best practices and security monitoring capabilities using AWS Lambda, DynamoDB, CloudWatch, and SNS.
 
 ## Features
 
 - **Real-time Event Ingestion**: Automatically ingests security events from various sources
-- **Intelligent Threat Detection**: 7 built-in detection rules for common security threats:
+- **Intelligent Threat Detection**: 11 built-in detection rules for common security threats:
   - Brute force attacks
   - Suspicious IP detection
   - Privilege escalation attempts
@@ -13,7 +18,11 @@ A real-time security monitoring system built with AWS serverless technologies. T
   - Port scanning and directory traversal
   - Anomalous time access
   - Failed authentication monitoring
-- **Automated Alerting**: SNS notifications for HIGH and CRITICAL severity alerts
+  - SQL injection detection
+  - API rate limiting violations
+  - Credential stuffing attacks
+  - Geo-location anomalies
+- **Automated Alerting**: Slack and SNS notifications for MEDIUM, HIGH and CRITICAL severity alerts
 - **Interactive Dashboard**: Real-time web dashboard for visualizing security events and alerts
 - **Scalable Architecture**: Fully serverless with automatic scaling
 - **Cost-Effective**: Pay only for what you use with AWS serverless services
