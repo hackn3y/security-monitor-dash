@@ -1,0 +1,94 @@
+# CloudTrail Integration for Security Monitoring Dashboard
+# This template sets up CloudTrail to send events to your security monitoring system
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudTrail Integration for Security Monitoring
+
+Parameters:
+  SecurityMonitoringApiEndpoint:
+    Type: String
+    Description: API Gateway endpoint from security-monitoring stack
+    Default: https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod/
+
+Resources:
+  # S3 Bucket for CloudTrail Logs
+  CloudTrailBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-cloudtrail-logs-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldLogs
+            Status: Enabled
+            ExpirationInDays: 90
+
+  CloudTrailBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudTrailBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt CloudTrailBucket.Arn
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub '${CloudTrailBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+
+  # CloudTrail
+  SecurityMonitoringTrail:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: CloudTrailBucketPolicy
+    Properties:
+      TrailName: SecurityMonitoringTrail
+      S3BucketName: !Ref CloudTrailBucket
+      IsLogging: true
+      IsMultiRegionTrail: true
+      IncludeGlobalServiceEvents: true
+      EventSelectors:
+        - ReadWriteType: All
+          IncludeManagementEvents: true
+
+  # Lambda to process CloudTrail events
+  CloudTrailProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudTrailEventProcessor
+      Runtime: python3.13
+      Handler: cloudtrail_processor.lambda_handler
+      CodeUri: ./src/cloudtrail/
+      Timeout: 60
+      Environment:
+        Variables:
+          SECURITY_API_ENDPOINT: !Ref SecurityMonitoringApiEndpoint
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref CloudTrailBucket
+      Events:
+        CloudTrailEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref CloudTrailBucket
+            Events: s3:ObjectCreated:*
+
+Outputs:
+  CloudTrailName:
+    Description: CloudTrail Trail Name
+    Value: !Ref SecurityMonitoringTrail
+  CloudTrailBucket:
+    Description: S3 Bucket for CloudTrail Logs
+    Value: !Ref CloudTrailBucket

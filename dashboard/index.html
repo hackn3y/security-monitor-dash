@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .alert-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 5px solid #ddd;
+        }
+
+        .alert-item.critical {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .alert-item.high {
+            border-left-color: #fd7e14;
+            background: #fff9f0;
+        }
+
+        .alert-item.medium {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .alert-item.low {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .severity-critical { background: #dc3545; }
+        .severity-high { background: #fd7e14; }
+        .severity-medium { background: #ffc107; color: #333; }
+        .severity-low { background: #28a745; }
+
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .event-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .event-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .event-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-label {
+            width: 150px;
+            font-weight: 500;
+        }
+
+        .bar {
+            height: 30px;
+            background: #667eea;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-weight: bold;
+            min-width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Security Monitoring Dashboard</h1>
+            <p class="subtitle">Real-time security event monitoring and threat detection</p>
+
+            <div class="config-section">
+                <label for="apiEndpoint"><strong>API Endpoint:</strong></label>
+                <input type="text" id="apiEndpoint" class="config-input"
+                       placeholder="https://your-api-gateway.execute-api.region.amazonaws.com/Prod/">
+                <button class="btn" onclick="saveConfig()">Save Configuration</button>
+            </div>
+        </header>
+
+        <div id="errorContainer"></div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalEvents">-</div>
+                <div class="stat-label">Total Events (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAlerts">-</div>
+                <div class="stat-label">Total Alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="openAlerts">-</div>
+                <div class="stat-label">Open Alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="criticalAlerts">-</div>
+                <div class="stat-label">Critical Alerts</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Recent Critical Alerts</h2>
+            <div id="criticalAlertsContainer">
+                <div class="loading">Loading alerts...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">All Recent Alerts</h2>
+            <div id="alertsContainer">
+                <div class="loading">Loading alerts...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Event Statistics</h2>
+            <div class="chart-container">
+                <h3>Events by Type</h3>
+                <div id="eventsByType" class="bar-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Top Source IPs</h3>
+                <div id="topSourceIps" class="bar-chart"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Recent Security Events</h2>
+            <div id="eventsContainer">
+                <div class="loading">Loading events...</div>
+            </div>
+        </div>
+
+        <div class="refresh-info">
+            Auto-refreshing every 30 seconds | Last updated: <span id="lastUpdate">Never</span>
+        </div>
+    </div>
+
+    <script>
+        let apiEndpoint = localStorage.getItem('apiEndpoint') || '';
+        let refreshInterval;
+
+        // Load saved config on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (apiEndpoint) {
+                document.getElementById('apiEndpoint').value = apiEndpoint;
+                startDashboard();
+            }
+        });
+
+        function saveConfig() {
+            apiEndpoint = document.getElementById('apiEndpoint').value.trim();
+
+            if (!apiEndpoint) {
+                showError('Please enter a valid API endpoint');
+                return;
+            }
+
+            // Ensure endpoint ends with /
+            if (!apiEndpoint.endsWith('/')) {
+                apiEndpoint += '/';
+            }
+
+            localStorage.setItem('apiEndpoint', apiEndpoint);
+            clearError();
+            startDashboard();
+        }
+
+        function startDashboard() {
+            // Clear existing interval
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+
+            // Initial load
+            fetchDashboardData();
+
+            // Auto-refresh every 30 seconds
+            refreshInterval = setInterval(fetchDashboardData, 30000);
+        }
+
+        async function fetchDashboardData() {
+            if (!apiEndpoint) {
+                showError('Please configure your API endpoint first');
+                return;
+            }
+
+            try {
+                // Fetch all data in parallel
+                const [stats, alerts, events] = await Promise.all([
+                    fetch(apiEndpoint + 'stats').then(r => r.json()),
+                    fetch(apiEndpoint + 'alerts?limit=50').then(r => r.json()),
+                    fetch(apiEndpoint + 'events?limit=100').then(r => r.json())
+                ]);
+
+                // Update statistics
+                updateStats(stats);
+
+                // Update alerts
+                updateAlerts(alerts.alerts, stats.recent_critical_alerts);
+
+                // Update events
+                updateEvents(events.events);
+
+                // Update charts
+                updateCharts(stats);
+
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+                clearError();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showError('Failed to fetch data from API. Please check your endpoint configuration.');
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('totalEvents').textContent = stats.overview.total_events || 0;
+            document.getElementById('totalAlerts').textContent = stats.overview.total_alerts || 0;
+            document.getElementById('openAlerts').textContent = stats.overview.open_alerts || 0;
+            document.getElementById('criticalAlerts').textContent = stats.overview.critical_alerts || 0;
+        }
+
+        function updateAlerts(alerts, criticalAlerts) {
+            // Update critical alerts
+            const criticalContainer = document.getElementById('criticalAlertsContainer');
+            if (criticalAlerts && criticalAlerts.length > 0) {
+                criticalContainer.innerHTML = criticalAlerts.map(alert => formatAlert(alert)).join('');
+            } else {
+                criticalContainer.innerHTML = '<p style="color: #28a745; font-weight: bold;">No critical alerts</p>';
+            }
+
+            // Update all alerts
+            const alertsContainer = document.getElementById('alertsContainer');
+            if (alerts && alerts.length > 0) {
+                alertsContainer.innerHTML = alerts.map(alert => formatAlert(alert)).join('');
+            } else {
+                alertsContainer.innerHTML = '<p>No alerts found</p>';
+            }
+        }
+
+        function formatAlert(alert) {
+            const severity = (alert.severity || 'unknown').toLowerCase();
+            const timestamp = new Date(alert.timestamp * 1000).toLocaleString();
+
+            return `
+                <div class="alert-item ${severity}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <span class="severity-badge severity-${severity}">${alert.severity}</span>
+                            <strong style="margin-left: 10px; font-size: 1.2em;">${alert.rule}</strong>
+                        </div>
+                        <span class="timestamp">${timestamp}</span>
+                    </div>
+                    <p style="margin: 10px 0; color: #333;">${alert.description}</p>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <strong>Source:</strong> ${alert.sourceEvent?.sourceIp || 'Unknown'} |
+                        <strong>User:</strong> ${alert.sourceEvent?.user || 'Unknown'} |
+                        <strong>Resource:</strong> ${alert.sourceEvent?.resource || 'Unknown'}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                        Alert ID: ${alert.alertId}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateEvents(events) {
+            const container = document.getElementById('eventsContainer');
+
+            if (!events || events.length === 0) {
+                container.innerHTML = '<p>No events found</p>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Type</th>
+                            <th>Source IP</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${events.slice(0, 50).map(event => `
+                            <tr>
+                                <td>${new Date(event.timestamp * 1000).toLocaleString()}</td>
+                                <td>${event.eventType}</td>
+                                <td>${event.sourceIp}</td>
+                                <td>${event.user}</td>
+                                <td>${event.action}</td>
+                                <td>${event.resource}</td>
+                                <td>${event.statusCode}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function updateCharts(stats) {
+            // Events by type
+            const eventsByType = document.getElementById('eventsByType');
+            if (stats.events_by_type) {
+                const maxCount = Math.max(...Object.values(stats.events_by_type));
+                eventsByType.innerHTML = Object.entries(stats.events_by_type)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([type, count]) => {
+                        const width = (count / maxCount) * 100;
+                        return `
+                            <div class="bar-item">
+                                <div class="bar-label">${type}</div>
+                                <div class="bar" style="width: ${width}%">${count}</div>
+                            </div>
+                        `;
+                    })
+                    .join('');
+            }
+
+            // Top source IPs
+            const topSourceIps = document.getElementById('topSourceIps');
+            if (stats.top_source_ips) {
+                const maxCount = Math.max(...stats.top_source_ips.map(ip => ip.count));
+                topSourceIps.innerHTML = stats.top_source_ips
+                    .map(ip => {
+                        const width = (ip.count / maxCount) * 100;
+                        return `
+                            <div class="bar-item">
+                                <div class="bar-label">${ip.name}</div>
+                                <div class="bar" style="width: ${width}%">${ip.count}</div>
+                            </div>
+                        `;
+                    })
+                    .join('');
+            }
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
