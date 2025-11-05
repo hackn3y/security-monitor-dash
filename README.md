@@ -7,6 +7,12 @@
 
 A real-time security monitoring system built with AWS serverless technologies. This project demonstrates cloud architecture best practices and security monitoring capabilities using AWS Lambda, DynamoDB, CloudWatch, and SNS.
 
+## 🎥 Live Demo
+
+**Watch the system in action:** [3-minute demo video](https://youtu.be/ilQ55ZIacQ8)
+
+See real-time threat detection, Slack notifications, and the complete workflow from event ingestion to alert generation.
+
 ## Features
 
 - **Real-time Event Ingestion**: Automatically ingests security events from various sources

@@ -90,17 +90,19 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventsTable
+        - CloudWatchPutMetricPolicy: {}
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /ingest
             Method: POST
-        ScheduledEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(1 minute)
-            Description: Simulated log ingestion
+        # ScheduledEvent disabled for clean demo recording
+        # ScheduledEvent:
+        #   Type: Schedule
+        #   Properties:
+        #     Schedule: rate(1 minute)
+        #     Description: Simulated log ingestion
 
   ThreatDetectionFunction:
     Type: AWS::Serverless::Function
@@ -115,6 +117,7 @@ Resources:
             TableName: !Ref AlertsTable
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt SecurityAlertsTopic.TopicName
+        - CloudWatchPutMetricPolicy: {}
       Events:
         DynamoDBStream:
           Type: DynamoDB
